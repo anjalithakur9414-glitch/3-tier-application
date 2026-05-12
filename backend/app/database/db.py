@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "postgresql://postgres:postgres@db:5432/devopsdb"
+DATABASE_URL = "postgresql://postgres:postgres@postgres-service:5432/devopsdb"
 
 engine = create_engine(DATABASE_URL)
 
