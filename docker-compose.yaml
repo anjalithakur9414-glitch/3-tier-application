@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+
+
+  db:
+     image: postgres:15
+     container_name: postgres-cont
+     restart: always
+
+     environment:
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: postgres
+       POSTGRES_DB: devopsdb
+
+     ports:
+      - "5432:5432"
+  backend:
+    build: ./backend
+    container_name: backend-cont 
+    ports: 
+      - "8000:8000"
+  
+  frontend:
+    build: ./frontend
+    container_name: frontend-cont
+    ports:
+     - "3000:3000"
+
+
