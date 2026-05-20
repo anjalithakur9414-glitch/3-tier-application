@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend-cont
-          image: yashdubey455/ui:6
+          image: yashdubey455/ui:5
           ports:
             - containerPort: 3000
           resources:
