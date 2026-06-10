@@ -4,6 +4,8 @@ WORKDIR /app
 
 COPY requirements.txt .
 
+# required details
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
