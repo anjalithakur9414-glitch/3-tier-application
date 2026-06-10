@@ -16,6 +16,7 @@ pipeline {
                 url: 'https://github.com/Yashdubey455/ui-api-db.git'
             }
         }
+        // pipelines
         stage('build') {
             steps{
                 sh 'docker build -t $IMAGE_BACKEND ./backend'
