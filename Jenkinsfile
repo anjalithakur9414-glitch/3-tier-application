@@ -1,48 +1,58 @@
- 
 pipeline {
     agent any
+
     environment {
         DOCKERHUB_CREDS = "dockerhub-creds"
         IMAGE_TAG = "${BUILD_NUMBER}"
-        IMAGE_FRONTEND = "yashdubey455/ui:${IMAGE_TAG}"
-        IMAGE_BACKEND  = "yashdubey455/api:${IMAGE_TAG}"
-        SONAR_HOST_URL = "http://SONARQUBE-IP:9000"
+
+        IMAGE_BACKEND  = "anjali1410/api:${BUILD_NUMBER}"
+        IMAGE_FRONTEND = "anjali1410/3-tier-application-ui:${BUILD_NUMBER}"
+
         SONAR_PROJECT_KEY = "ui-api-project"
     }
+
     stages {
+
         stage('Code Clone') {
             steps {
-                git branch: 'master',
+                git branch: 'main',
                 credentialsId: 'github-creds',
-                url: 'https://github.com/Yashdubey455/ui-api-db.git'
+                url: 'https://github.com/anjalithakur9414-glitch/3-tier-application.git'
             }
         }
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonarqube') {
-                    sh '''
-                    sonar-scanner \
-                      -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-                      -Dsonar.projectName=ui-api-project \
-                      -Dsonar.sources=. \
-                      -Dsonar.host.url=$SONAR_HOST_URL
-                    '''
-                }
+
+stage('SonarQube Analysis') {
+    steps {
+        withSonarQubeEnv('sonarqube') {
+            withCredentials([string(
+                credentialsId: 'sonar-token',
+                variable: 'SONAR_TOKEN'
+            )]) {
+                sh '''
+                export PATH=$PATH:/opt/sonar-scanner/bin
+
+                sonar-scanner \
+                  -Dsonar.projectKey=ui-api-project \
+                  -Dsonar.sources=. \
+                  -Dsonar.token=$SONAR_TOKEN
+                '''
             }
         }
+    }
+}
         stage('Build Docker Images') {
             steps {
                 sh 'docker build -t $IMAGE_BACKEND ./backend'
                 sh 'docker build -t $IMAGE_FRONTEND ./frontend'
             }
         }
+
         stage('Trivy File Scan') {
             steps {
-                sh '''
-                trivy fs . > trivy-fs-report.txt
-                '''
+                sh 'trivy fs . > trivy-fs-report.txt'
             }
         }
+
         stage('Trivy Image Scan') {
             steps {
                 sh '''
@@ -51,6 +61,7 @@ pipeline {
                 '''
             }
         }
+
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(
@@ -64,6 +75,7 @@ pipeline {
                 }
             }
         }
+
         stage('Push Images') {
             steps {
                 retry(3) {
@@ -74,6 +86,7 @@ pipeline {
                 }
             }
         }
+
         stage('Update Kubernetes Manifest') {
             steps {
                 withCredentials([usernamePassword(
@@ -82,28 +95,33 @@ pipeline {
                     passwordVariable: 'GIT_PASS'
                 )]) {
                     sh '''
-                    sed -i "s|image:.*api.*|image: yashdubey455/api:$IMAGE_TAG|g" k8s/backend-deployment.yaml
-                    sed -i "s|image:.*ui.*|image: yashdubey455/ui:$IMAGE_TAG|g" k8s/frontend-deployment.yaml
+                    sed -i "s|image:.*api.*|image: anjali1410/api:$IMAGE_TAG|g" k8s/backend-deployment.yaml
+                    sed -i "s|image:.*ui.*|image: anjali1410/3-tier-application-ui:$IMAGE_TAG|g" k8s/frontend-deployment.yaml
+
                     git config user.name "jenkins"
                     git config user.email "jenkins@local"
+
                     git add k8s/
                     git commit -m "update manifests image" || echo "no changes"
-                    git push https://$GIT_USER:$GIT_PASS@github.com/Yashdubey455/ui-api-db.git master
+
+                    git push https://$GIT_USER:$GIT_PASS@github.com/anjalithakur9414-glitch/3-tier-application.git main
                     '''
                 }
             }
         }
     }
+
     post {
         always {
             archiveArtifacts artifacts: '*.txt', allowEmptyArchive: true
         }
+
         success {
             echo 'Pipeline executed successfully'
         }
+
         failure {
             echo 'Pipeline failed'
         }
     }
 }
- 
