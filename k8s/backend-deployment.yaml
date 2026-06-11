@@ -15,7 +15,7 @@ spec:
    spec:
     containers:
      - name: backend-cont
-       image: anjali1410/api:5
+       image: anjali1410/api:14
        ports:
         - containerPort: 8000
        envFrom:
