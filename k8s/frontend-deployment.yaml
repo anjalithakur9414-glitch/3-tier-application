@@ -17,7 +17,7 @@ spec:
         - name: dockerhub-secret
       containers:
         - name: frontend-cont
-          image: anjali1410/3-tier-application-ui:14
+          image: anjali1410/3-tier-application-ui:22
           ports:
             - containerPort: 3000
           resources:
